@@ -2,6 +2,197 @@
 Usage
 =====
 
-To use haggregate in a project::
+Synopsis
+========
 
-    import haggregate
+``haggregate [--traceback] config_file``
+
+Description and quick start
+===========================
+
+``haggregate`` gets the data of time series from files and creates time
+series of a larger time step, storing the result in files.  The
+details of its operation are specified in the configuration file
+specified on the command line.
+
+Installation
+------------
+
+``pip install haggregate``
+
+How to run it
+-------------
+
+First, you need to create a configuration file with a text editor such
+as ``vim``, ``emacs``, ``notepad``, or whatever. Create such a file
+and name it, for example, :file:`/var/tmp/aggregate.conf`, or, on
+Windows, something like :file:`C:\\Users\\user\\aggregate.conf`, with
+the following contents (the contents don't matter at this stage, just
+copy and paste them from below)::
+
+    [General]
+    loglevel = INFO
+
+Then, open a command prompt and give it this command:
+
+**Unix/Linux**::
+
+    aggregate /var/tmp/aggregate.conf
+
+**Windows**::
+
+    C:\Program Files\Pthelma\aggregate.exe C:\Users\user\aggregate.conf
+
+(the details may differ; for example, in 64-bit Windows, it may be
+:file:`C:\\Program Files (x86)` instead of :file:`C:\\Program Files`.)
+
+If you have done everything correctly, it should output an error message
+complaining that something in its configuration file isn't right.
+
+Configuration file example
+--------------------------
+
+Take a look at the following example configuration file and read the
+explanatory comments that follow it:
+
+.. code-block:: ini
+
+    [General]
+    loglevel = INFO
+    logfile = C:\Somewhere\aggregate.log
+    base_dir = C:\Somewhere
+    target_step = 60,0
+
+    [temperature]
+    source_file = temperature-10min.hts
+    target_file = temperature-hourly.hts
+    interval_type = average
+
+    [rainfall]
+    source_file = rainfall-10min.hts
+    target_file = rainfall-hourly.hts
+    interval_type = sum
+
+With the above configuration file, ``aggregate`` will log information in
+the file specified by :option:`logfile`. It will aggregate the
+specified time series into hourly (60 minutes, 0 months). The
+filenames specified with :option:`source_file` and
+:option:`target_file` are relative to :option:`base_dir`. For the
+temperature, source records will be averaged, whereas for rainfall
+they will be summed.
+
+Configuration file reference
+============================
+
+The configuration file has the format of INI files. There is a
+``[General]`` section with general parameters, and any number of other
+sections, which we will call "time series sections", each time series
+section referring to one time series.
+
+General parameters
+------------------
+
+.. option:: loglevel
+
+   Optional. Can have the values ``ERROR``, ``WARNING``, ``INFO``,
+   ``DEBUG``.  The default is ``WARNING``.
+
+.. option:: logfile
+
+   Optional. The full pathname of a log file. If unspecified, log
+   messages will go to the standard error.
+
+.. option:: base_dir
+
+   Optional. ``aggregate`` will change directory to this directory, so
+   any relative filenames will be relative to this directory. If
+   unspecified, relative filenames will be relative to the directory
+   from which ``aggregate`` was started.
+
+.. option:: target_step
+
+   A pair of integers indicating the number of minutes and months in
+   the target time step. One and only one of these numbers must be
+   nonzero (i.e. the target time step is an integer number of minutes
+   or months).
+
+.. option:: timestamp_rounding
+
+   Optional. A pair of integers. The default is 0, 0. The timestamps
+   of, e.g., an hourly time series usually end in :00, but they could
+   end in, say, :07. In this case, the timestamp rounding is 7
+   minutes. A rounding specified in months is usually only used to
+   specify a hydrological year, e.g. hydrological years in Greece have
+   a timestamp rounding of 9 months, with 0=January.
+
+   This parameter specifies the rounding for the target time series.
+
+.. option:: timestamp_offset
+
+   Optional. A pair of integers. The default is 0, 0. Usually the
+   timestamps refer to the interval whose time ends at the timestamp.
+   So, for example, in an hourly time series (with rounding 50),
+   2014-06-16 15:50 refers to the interval 2014-06-16 14:50-15:50.
+
+   In some rare cases, however, we may want to use the timestamp
+   2014-06-16 15:50 to signify the interval 2014-06-16 14:45-15:45. In
+   that case, we say we have an timestamp offset of -5 minutes.
+
+   There are two use cases for this. One is river flows. Suppose you
+   are aggregating hourly river stages into monthly river stages. If
+   your basin is such that a rainfall today results in increased stage
+   2 days later, you may want "April 2014" for stages to actually mean
+   the period "3 April to 3 May 2014", so that it correlates better
+   with monthly rainfalls. In this case, you have a timestamp offset
+   of 2880 minutes (plus one month, see below).
+
+   The second use case is when the timestamp indicates the beginning
+   rather than the end of the interval, which is usually the case for
+   monthly and annual time series. For a monthly time series, the
+   timestamp 2003-11-01 00:00 (normally rendered as 2003-11) usually
+   denotes the interval that starts at the beginning of November and
+   ends at the end of November. In these cases, the timestamp offset
+   should be the length of the interval, i.e. 1 month for monthly time
+   series and 12 months for annual time series.
+
+   Both minutes and months can be nonzero. In the river flows example
+   above, the offset would be (2880, 1).
+
+.. option:: missing_allowed
+             missing_flag
+
+   Optional, default 0. If some of the source records corresponding to
+   a destination record are missing, :option:`missing_allowed`
+   specifies what will be done. If the ratio of missing values to
+   existing values in the source record is greater than
+   :option:`missing_allowed`, the resulting destination record is
+   null; otherwise, the destination record is derived even though some
+   records are missing. In that case, the flag specified by
+   :option:`missing_flag` is raised in the destination record.
+
+Time series sections
+--------------------
+
+The name of the section is ignored.
+
+.. option:: source_file
+
+   The filename of the source file with the time series, in `file
+   format`_; it must be absolute or relative to :option:`base_dir`.
+
+.. option:: target_file
+
+   The filename of the target file, which will be written in `file
+   format`_; it must be absolute or relative to :option:`base_dir`. In
+   this version of ``aggregate``, all the aggregation is repeated even
+   if it or part of it has been done in the past, and the file is
+   entirely overwritten if it already exists.
+
+.. option:: interval_type
+
+   How the aggregation will be performed; one of "average", "sum",
+   "maximum", "minimum", or "vector_average". In the last case, each
+   produced record is the direction in degrees of the sum of the unit
+   vectors whose direction is specified by the source records.
+
+.. _file format: https://github.com/openmeteo/htimeseries/#file-format
