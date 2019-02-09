@@ -7,7 +7,6 @@ from htimeseries import HTimeseries
 
 from haggregate import aggregate
 
-
 tenmin_test_timeseries = textwrap.dedent(
     """\
             2008-02-07 09:40,10.32,

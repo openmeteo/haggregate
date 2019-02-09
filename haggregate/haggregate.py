@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-
 from htimeseries import HTimeseries
-
 
 methods = {
     "sum": pd.Series.sum,

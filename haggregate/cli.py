@@ -6,7 +6,6 @@ import sys
 import traceback
 
 import click
-
 from htimeseries import HTimeseries
 
 from haggregate import aggregate
