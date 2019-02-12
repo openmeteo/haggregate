@@ -8,7 +8,7 @@ import traceback
 import click
 from htimeseries import HTimeseries
 
-from haggregate import aggregate
+from haggregate import aggregate, regularize
 
 
 @click.command()
@@ -56,8 +56,13 @@ def main(configfile):
             method = section.get("method")
             with open(source_filename) as f:
                 ts = HTimeseries.read(f, format=HTimeseries.FILE)
+            regts = regularize(ts, new_date_flag="DATEINSERT")
             aggts = aggregate(
-                ts, target_step, method, min_count=min_count, missing_flag=missing_flag
+                regts,
+                target_step,
+                method,
+                min_count=min_count,
+                missing_flag=missing_flag,
             )
             with open(target_filename, "w") as f:
                 aggts.write(f, format=HTimeseries.FILE)
