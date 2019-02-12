@@ -162,3 +162,13 @@ class RegularizeNullRecordTestCase(TestCase):
 
     def test_value_4(self):
         self.assertAlmostEqual(self.result.data.loc["2008-02-07 11:00"].value, 10.93)
+
+
+class RegularizeEmptyTestCase(TestCase):
+    def setUp(self):
+        ts = HTimeseries()
+        ts.time_step = "10,0"
+        self.result = regularize(ts)
+
+    def test_length(self):
+        self.assertEqual(len(self.result.data), 0)

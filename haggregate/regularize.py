@@ -20,12 +20,6 @@ def regularize(ts, new_date_flag="DATEINSERT"):
             "specified in minutes are supported."
         )
 
-    # Determine first and last timestamps
-    freq = ts.time_step.split(",")[0].strip() + "min"
-    step = pd.Timedelta(freq)
-    first_timestamp_of_result = ts.data.index[0].round(step)
-    last_timestamp_of_result = ts.data.index[-1].round(step)
-
     # Set metadata of result
     result = HTimeseries()
     attrs = (
@@ -48,6 +42,16 @@ def regularize(ts, new_date_flag="DATEINSERT"):
             "Created by regularizing step of timeseries that had this comment:\n\n"
             + ts.comment
         )
+
+    # Return immediately if empty
+    if len(ts.data) == 0:
+        return result
+
+    # Determine first and last timestamps
+    freq = ts.time_step.split(",")[0].strip() + "min"
+    step = pd.Timedelta(freq)
+    first_timestamp_of_result = ts.data.index[0].round(step)
+    last_timestamp_of_result = ts.data.index[-1].round(step)
 
     # Calculate result.data
     current_timestamp = first_timestamp_of_result
