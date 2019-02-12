@@ -10,6 +10,10 @@ methods = {
 }
 
 
+class AggregateError(Exception):
+    pass
+
+
 def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     result = HTimeseries()
 
@@ -18,12 +22,16 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     current_range = hts.data.index
     try:
         freq = pd.tseries.frequencies.to_offset(pd.infer_freq(current_range))
+        if freq is None:
+            raise AggregateError(
+                "Can't infer time series step; maybe it's not regularized"
+            )
     except ValueError:
         # Can't infer frequency - insufficient number of records
         return result
-    first_date = current_range[0] - pd.to_timedelta(freq)
-    end_date = current_range[-1] + pd.to_timedelta(freq)
-    new_range = pd.date_range(first_date, end_date, freq=freq)
+    first_timestamp = current_range[0].floor(target_step)
+    end_timestamp = current_range[-1].ceil(target_step)
+    new_range = pd.date_range(first_timestamp, end_timestamp, freq=freq)
     source_data = hts.data.reindex(new_range)
 
     # Do the resampling

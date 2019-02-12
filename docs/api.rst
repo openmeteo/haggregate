@@ -72,7 +72,8 @@ API
    Process *ts* (a HTimeseries_ object) and return a new time series
    (HTimeseries_ object), with the aggregated series.  "target_step" is
    a pandas "frequency" string.  *method* is "sum", "mean", "max" or
-   "min".
+   "min". *ts* must have a strictly regular step. If in doubt, call
+   :func:`regularize` before calling :func:`aggregate`.
 
    If some of the source records corresponding to a destination record
    are missing, *min_count* specifies what will be done. If there fewer
@@ -80,5 +81,8 @@ API
    destination record is null; otherwise, the destination record is
    derived even though some records are missing.  In that case, the flag
    specified by *missing_flag* is raised in the destination record.
+
+   If an error occurs, such as *ts* not having a strictly regular step,
+   :exc:`AggregateError` (or a subclass) is raised.
 
 .. _HTimeseries: https://github.com/openmeteo/htimeseries

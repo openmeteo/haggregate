@@ -5,7 +5,7 @@ from unittest import TestCase
 import pandas as pd
 from htimeseries import HTimeseries
 
-from haggregate import aggregate
+from haggregate import AggregateError, aggregate
 
 tenmin_test_timeseries = textwrap.dedent(
     """\
@@ -80,6 +80,27 @@ class HourlySumTestCase(TestCase):
 
     def test_value_4(self):
         self.assertAlmostEqual(self.result.data.loc["2008-02-07 13:00"].value, 72.77)
+
+
+class TimestampIrregularityTestCase(TestCase):
+    def test_raises_exception(self):
+        # In the time series below, it's 10:41 instead of 10:40
+        ts = HTimeseries.read(
+            StringIO(
+                textwrap.dedent(
+                    """\
+                   2008-02-07 10:10,10.54,
+                   2008-02-07 10:20,10.71,
+                   2008-02-07 10:30,10.96,
+                   2008-02-07 10:41,10.93,
+                   2008-02-07 10:50,11.10,
+                   2008-02-07 11:00,11.23,
+                   """
+                )
+            )
+        )
+        with self.assertRaises(AggregateError):
+            aggregate(ts, "H", "sum")
 
 
 class HourlySumWithLargerMinCountTestCase(TestCase):
