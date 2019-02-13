@@ -2,7 +2,6 @@ import textwrap
 from io import StringIO
 from unittest import TestCase
 
-import pandas as pd
 from htimeseries import HTimeseries
 
 from haggregate import AggregateError, aggregate
