@@ -52,14 +52,17 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     step = pd.Timedelta(freq)
     first_timestamp_of_result = ts.data.index[0].round(step)
     last_timestamp_of_result = ts.data.index[-1].round(step)
+    index = pd.date_range(
+        first_timestamp_of_result, last_timestamp_of_result, freq=freq
+    )
+    result.data = pd.DataFrame(index=index, columns=["value", "flags"]).fillna(
+        value={"flags": ""}
+    )
 
     # Calculate result.data
-    current_timestamp = first_timestamp_of_result
-    while current_timestamp <= last_timestamp_of_result:
-        result.data.loc[current_timestamp] = _get_record(
-            ts, current_timestamp, step, new_date_flag
-        )
-        current_timestamp += step
+    result.data = result.data.apply(
+        axis="columns", func=lambda x: _get_record(ts, x.name, step, new_date_flag)
+    )
 
     return result
 
@@ -77,10 +80,10 @@ def _get_record(ts, current_timestamp, step, new_date_flag):
     timestamps = ts.data.index[ts.data.index >= start]
     timestamps = timestamps[timestamps < end]
     if len(timestamps) != 1:
-        return {"value": None, "flags": ""}
+        return pd.Series([None, ""], name=current_timestamp, index=["value", "flags"])
     value = ts.data.loc[timestamps[0]].value
     flags = ts.data.loc[timestamps[0]]["flags"]
     if flags:
         flags += " "
     flags += "DATEINSERT"
-    return {"value": value, "flags": flags}
+    return pd.Series([value, flags], name=current_timestamp, index=["value", "flags"])
