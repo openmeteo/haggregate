@@ -6,9 +6,9 @@ python:
 install:
   - pip install --upgrade pip
   - pip install codecov coverage isort flake8
-  - pip install -e .
+  - pip install cython
 
-script: tox
+script:
  - if python -c "import sys; exit(not (sys.version >= '3.6'))"; then pip install black; black --check .; fi
  - flake8 --max-line-length=88 .
  - isort --recursive --check-only --diff *.py haggregate tests

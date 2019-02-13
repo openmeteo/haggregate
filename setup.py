@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 
+# Running setup.py requires having installed numpy and Cython. There are some
+# complicated solutions that might make it possible to somehow add them to
+# "setup_requirements" etc., but I decided they aren't worth it. We'd better wait until
+# Python has better packaging tools (this shouldn't need more than 100 more years).
+# More information on the complicated solutions:
+# https://stackoverflow.com/questions/37471313/
+# https://stackoverflow.com/questions/14657375/
+# https://stackoverflow.com/questions/2379898/
+
+import numpy
 from setuptools import find_packages, setup
+from Cython.Build import cythonize
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -10,11 +21,13 @@ with open("HISTORY.rst") as history_file:
 
 requirements = ["Click>=6.0", "htimeseries"]
 
-setup_requirements = []
+setup_requirements = ["cython>=0.29,<0.30"]
 
 test_requirements = []
 
 setup(
+    ext_modules=cythonize("haggregate/regularize.pyx"),
+    include_dirs=[numpy.get_include()],
     author="Antonis Christofides",
     author_email="antonis@antonischristofides.com",
     classifiers=[

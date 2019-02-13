@@ -1,3 +1,6 @@
+# cython: language_level=3
+
+cimport numpy as np
 import numpy as np
 import pandas as pd
 from htimeseries import HTimeseries
@@ -55,58 +58,95 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     last_timestamp_of_result = ts.data.index[-1].round(step)
 
     # Transform all pandas information to plain numpy, which is way faster and is also
-    # supported by numba (and Cython)
-    orig_index = ts.data.index.values
-    orig_values = ts.data["value"].values
-    orig_flags = ts.data["flags"].values.astype("U250")
-    step = np.timedelta64(step)
-    index = pd.date_range(
+    # supported by numba and Cython
+    ts_index = ts.data.index.values.astype(long)
+    ts_values = ts.data["value"].values
+    ts_flags = ts.data["flags"].values.astype("U250")
+    result_step = np.timedelta64(step).astype(int) * 1000
+    result_index = pd.date_range(
         first_timestamp_of_result, last_timestamp_of_result, freq=freq
     ).values
-    values = np.full(len(index), np.nan, dtype=object)
-    flags = np.full(len(index), "", dtype="U250")
+    result_values = np.full(len(result_index), np.nan, dtype=object)
+    result_flags = np.full(len(result_index), "", dtype="U250")
 
     # Do the job
     _perform_regularization(
-        index, values, flags, orig_index, orig_values, orig_flags, step, new_date_flag
+        result_index,
+        result_values,
+        result_flags,
+        ts_index,
+        ts_values,
+        ts_flags,
+        result_step,
+        new_date_flag,
     )
 
     result.data = pd.DataFrame(
-        index=index,
+        index=result_index,
         columns=["value", "flags"],
-        data=np.vstack((values, flags)).transpose(),
+        data=np.vstack((result_values, result_flags)).transpose(),
     )
     return result
 
 
 def _perform_regularization(
-    index, values, flags, orig_index, orig_values, orig_flags, step, new_date_flag
+    np.ndarray result_index,
+    np.ndarray result_values,
+    np.ndarray result_flags,
+    np.ndarray ts_index,
+    np.ndarray ts_values,
+    np.ndarray ts_flags,
+    long result_step,
+    str new_date_flag,
 ):
-    for i in range(index.size):
-        t = index[i]
-        values[i], flags[i] = _get_record(
-            orig_index, orig_values, orig_flags, t, step, new_date_flag
+    cdef int i, previous_pos
+    cdef long t
+
+    previous_pos = 0
+    for i in range(result_index.size):
+        t = result_index[i]
+        result_values[i], result_flags[i], previous_pos = _get_record(
+            ts_index, ts_values, ts_flags, t, result_step, new_date_flag, previous_pos
         )
 
 
-def _get_record(orig_index, orig_values, orig_flags, t, step, new_date_flag):
+def _get_record(
+    np.ndarray ts_index,
+    np.ndarray ts_values,
+    np.ndarray ts_flags,
+    long t,
+    long result_step,
+    str new_date_flag,
+    int previous_pos,
+):
+    cdef int i, found, count
+
     # Return the source record if it already exists
-    pos = np.asarray(orig_index == t).nonzero()[0]
-    assert pos.size in (0, 1)
-    if pos.size == 1:
-        i = pos[0]
-        return orig_values[i], orig_flags[i]
+    found = False
+    for i in range(previous_pos, ts_index.size):
+        if ts_index[i] == t:
+            found = True
+            break
+        if ts_index[i] > t:
+            break
+    if found:
+        return ts_values[i], ts_flags[i], i
 
     # Otherwise get the nearby record, if it exists and is only one
-    start = t - step / 2
-    end = t + step / 2
-    timestamps = np.asarray((orig_index >= start) & (orig_index < end)).nonzero()[0]
-    if timestamps.size != 1:
-        return np.nan, ""
-    i = timestamps[0]
-    value = orig_values[i]
-    flags = orig_flags[i]
+    start = t - result_step / 2
+    end = t + result_step / 2
+    count = 0
+    for i in range(previous_pos, ts_index.size):
+        if ts_index[i] >= start and ts_index[i] < end:
+            count += 1
+        if ts_index[i] >= end:
+            i -= 1
+            break
+    if count != 1:
+        return np.nan, "", i
+    value = ts_values[i]
+    flags = ts_flags[i]
     if flags:
         flags += " "
     flags += "DATEINSERT"
-    return value, flags
+    return value, flags, i + 1
