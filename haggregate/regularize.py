@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from htimeseries import HTimeseries
 
@@ -52,38 +53,60 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     step = pd.Timedelta(freq)
     first_timestamp_of_result = ts.data.index[0].round(step)
     last_timestamp_of_result = ts.data.index[-1].round(step)
+
+    # Transform all pandas information to plain numpy, which is way faster and is also
+    # supported by numba (and Cython)
+    orig_index = ts.data.index.values
+    orig_values = ts.data["value"].values
+    orig_flags = ts.data["flags"].values.astype("U250")
+    step = np.timedelta64(step)
     index = pd.date_range(
         first_timestamp_of_result, last_timestamp_of_result, freq=freq
-    )
-    result.data = pd.DataFrame(index=index, columns=["value", "flags"]).fillna(
-        value={"flags": ""}
+    ).values
+    values = np.full(len(index), np.nan, dtype=object)
+    flags = np.full(len(index), "", dtype="U250")
+
+    # Do the job
+    _perform_regularization(
+        index, values, flags, orig_index, orig_values, orig_flags, step, new_date_flag
     )
 
-    # Calculate result.data
-    result.data = result.data.apply(
-        axis="columns", func=lambda x: _get_record(ts, x.name, step, new_date_flag)
+    result.data = pd.DataFrame(
+        index=index,
+        columns=["value", "flags"],
+        data=np.vstack((values, flags)).transpose(),
     )
-
     return result
 
 
-def _get_record(ts, current_timestamp, step, new_date_flag):
+def _perform_regularization(
+    index, values, flags, orig_index, orig_values, orig_flags, step, new_date_flag
+):
+    for i in range(index.size):
+        t = index[i]
+        values[i], flags[i] = _get_record(
+            orig_index, orig_values, orig_flags, t, step, new_date_flag
+        )
+
+
+def _get_record(orig_index, orig_values, orig_flags, t, step, new_date_flag):
     # Return the source record if it already exists
-    try:
-        return ts.data.loc[current_timestamp]
-    except KeyError:
-        pass
+    pos = np.asarray(orig_index == t).nonzero()[0]
+    assert pos.size in (0, 1)
+    if pos.size == 1:
+        i = pos[0]
+        return orig_values[i], orig_flags[i]
 
     # Otherwise get the nearby record, if it exists and is only one
-    start = current_timestamp - step / 2
-    end = current_timestamp + step / 2
-    timestamps = ts.data.index[ts.data.index >= start]
-    timestamps = timestamps[timestamps < end]
-    if len(timestamps) != 1:
-        return pd.Series([None, ""], name=current_timestamp, index=["value", "flags"])
-    value = ts.data.loc[timestamps[0]].value
-    flags = ts.data.loc[timestamps[0]]["flags"]
+    start = t - step / 2
+    end = t + step / 2
+    timestamps = np.asarray((orig_index >= start) & (orig_index < end)).nonzero()[0]
+    if timestamps.size != 1:
+        return np.nan, ""
+    i = timestamps[0]
+    value = orig_values[i]
+    flags = orig_flags[i]
     if flags:
         flags += " "
     flags += "DATEINSERT"
-    return pd.Series([value, flags], name=current_timestamp, index=["value", "flags"])
+    return value, flags
