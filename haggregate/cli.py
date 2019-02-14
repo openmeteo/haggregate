@@ -54,7 +54,7 @@ def main(configfile):
             source_filename = os.path.join(base_dir, section.get("source_file"))
             target_filename = os.path.join(base_dir, section.get("target_file"))
             method = section.get("method")
-            with open(source_filename) as f:
+            with open(source_filename, newline="\n") as f:
                 ts = HTimeseries.read(f, format=HTimeseries.FILE)
             regts = regularize(ts, new_date_flag="DATEINSERT")
             aggts = aggregate(
