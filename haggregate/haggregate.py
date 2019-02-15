@@ -17,6 +17,29 @@ class AggregateError(Exception):
 def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     result = HTimeseries()
 
+    # Set metadata of result
+    result = HTimeseries()
+    attrs = (
+        "unit",
+        "time_zone",
+        "time_step",
+        "interval_type",
+        "variable",
+        "precision",
+        "location",
+    )
+    for attr in attrs:
+        setattr(result, attr, getattr(hts, attr, None))
+    result.timestamp_rounding = 0
+    result.timestamp_offset = 0
+    if hasattr(hts, "title"):
+        result.title = "Aggregated " + hts.title
+    if hasattr(hts, "comment"):
+        result.comment = (
+            "Created by aggregating the time series that had this comment:\n\n"
+            + hts.comment
+        )
+
     # Reindex the source so that it has no missing records but has NaNs instead,
     # starting from one before and ending in one after
     current_range = hts.data.index

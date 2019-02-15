@@ -213,3 +213,24 @@ class AllMissAggregateTestCase(TestCase):
 
     def test_value_1(self):
         self.assertAlmostEqual(self.result.data.loc["2005-05-01 02:00"].value, 3)
+
+
+class SetsMetadataTestCase(TestCase):
+    def setUp(self):
+        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts.title = "hello"
+        self.ts.precision = 1
+        self.ts.comment = "world"
+        self.result = aggregate(self.ts, "H", "sum", min_count=3, missing_flag="MISS")
+
+    def test_sets_title(self):
+        self.assertEqual(self.result.title, "Aggregated hello")
+
+    def test_sets_precision(self):
+        self.assertEqual(self.result.precision, 1)
+
+    def test_sets_comment(self):
+        self.assertEqual(
+            self.result.comment,
+            "Created by aggregating the time series that had this comment:\n\nworld",
+        )
