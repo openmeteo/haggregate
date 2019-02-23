@@ -112,10 +112,9 @@ General parameters
 .. option:: target_step
 
    A string specifying the target time step, as a pandas "frequency".
-   Examples of steps are "D" for day, "H" for hour, "T" or "min" for
-   minute, "M" for month end, "MS" for month begin, "A-SEP" for year
-   anchored 30 September, "AS_OCT" for year anchored 1 October. You can
-   also use multipliers, like "30T" for 30 minutes.
+   Examples of steps are "1D" for day, "1H" for hour, "1T" or "1min" for
+   minute. You can also use larger multipliers, like "30T" for 30 minutes.
+   The program hasn't been tested for monthly or larger time steps.
 
 .. option:: min_count
             missing_flag
