@@ -11,7 +11,7 @@ install:
 script:
  - if python -c "import sys; exit(not (sys.version >= '3.6'))"; then pip install black; black --check .; fi
  - flake8 --max-line-length=88 .
- - isort --recursive --check-only --diff *.py haggregate tests
+ - isort --recursive --check-only --diff haggregate tests
  - coverage run --include="./*" --omit="docs/","*/tests/*","*/tests.py","setup.py" ./setup.py test
 
 after_success:
