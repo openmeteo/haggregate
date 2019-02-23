@@ -1,4 +1,5 @@
-# cython: language_level=3
+# cython: language_level=3, linetrace=True
+# distutils: define_macros=CYTHON_TRACE=1
 
 cimport numpy as np
 import numpy as np
