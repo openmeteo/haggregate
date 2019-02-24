@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 from htimeseries import HTimeseries
 
-from haggregate import RegularizeError, regularize
+from haggregate.regularize import RegularizeError, regularize
 
 
 class BadTimeStepTestCase(TestCase):

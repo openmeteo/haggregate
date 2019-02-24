@@ -8,7 +8,8 @@ import traceback
 import click
 from htimeseries import HTimeseries
 
-from haggregate import aggregate, regularize
+from haggregate import aggregate
+from haggregate.regularize import regularize
 
 
 @click.command()

@@ -4,7 +4,7 @@ API
 
 ``from haggregate import aggregate, regularize``
 
-.. function:: regularize(ts, new_date_flag="DATEINSERT")
+.. function:: haggregate.regularize.regularize(ts, new_date_flag="DATEINSERT")
 
    Process *ts* (a HTimeseries_ object) and return a new time series
    (HTimeseries_ object), with a strict time step.
@@ -67,7 +67,7 @@ API
    it with a more clever one that does interpolation, first check commit
    67bceaa, which had one (or the difference with the next commit).
 
-.. function:: aggregate(ts, target_step, method[, min_count=None][, missing_flag])
+.. function:: haggregate.aggregate(ts, target_step, method[, min_count=None][, missing_flag])
 
    Process *ts* (a HTimeseries_ object) and return a new time series
    (HTimeseries_ object), with the aggregated series.  "target_step" is
