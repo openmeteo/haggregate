@@ -14,6 +14,9 @@ isort:skip_file
 # https://stackoverflow.com/questions/14657375/
 # https://stackoverflow.com/questions/2379898/
 
+import os
+import re
+
 import numpy
 from setuptools import find_packages, setup
 from Cython.Build import cythonize
@@ -29,6 +32,14 @@ requirements = ["Click>=7.0,<8", "htimeseries>=1.1,<2"]
 setup_requirements = ["cython>=0.29,<0.30"]
 
 test_requirements = []
+
+
+def get_version():
+    scriptdir = os.path.dirname(os.path.abspath(__file__))
+    init_py_path = os.path.join(scriptdir, "haggregate", "__init__.py")
+    with open(init_py_path) as f:
+        return re.search(r'^__version__ = "(.*?)"$', f.read(), re.MULTILINE).group(1)
+
 
 setup(
     ext_modules=cythonize("haggregate/regularize.pyx"),
@@ -56,6 +67,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/openmeteo/haggregate",
-    version="0.1.0.dev0",
+    version=get_version(),
     zip_safe=False,
 )
