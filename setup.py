@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+
+We don't isort this file because Cython has to go after setuptools.
+isort:skip_file
+"""
 
 # Running setup.py requires having installed numpy and Cython. There are some
 # complicated solutions that might make it possible to somehow add them to
