@@ -61,7 +61,7 @@ aggregated_hourly_allmiss = textwrap.dedent(
 
 class HourlySumTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.result = aggregate(self.ts, "1H", "sum", min_count=3, missing_flag="MISS")
 
     def test_length(self):
@@ -84,7 +84,7 @@ class HourlySumTestCase(TestCase):
 class TimestampIrregularityTestCase(TestCase):
     def test_raises_exception(self):
         # In the time series below, it's 10:41 instead of 10:40
-        ts = HTimeseries.read(
+        ts = HTimeseries(
             StringIO(
                 textwrap.dedent(
                     """\
@@ -107,7 +107,7 @@ class HourlySumWithLargerMinCountTestCase(TestCase):
     """
 
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.result = aggregate(self.ts, "1H", "sum", min_count=4, missing_flag="MISS")
 
     def test_length(self):
@@ -125,7 +125,7 @@ class HourlySumWithLargerMinCountTestCase(TestCase):
 
 class HourlyMeanTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.result = aggregate(self.ts, "1H", "mean", min_count=3, missing_flag="MISS")
 
     def test_length(self):
@@ -154,7 +154,7 @@ class HourlyMeanTestCase(TestCase):
 
 class HourlyMaxTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.result = aggregate(self.ts, "1H", "max", min_count=3, missing_flag="MISS")
 
     def test_length(self):
@@ -175,7 +175,7 @@ class HourlyMaxTestCase(TestCase):
 
 class HourlyMinTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.result = aggregate(self.ts, "1H", "min", min_count=3, missing_flag="MISS")
 
     def test_length(self):
@@ -205,7 +205,7 @@ class AggregateEmptyTestCase(TestCase):
 
 class AllMissAggregateTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_allmiss_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_allmiss_test_timeseries))
         self.result = aggregate(self.ts, "1H", "sum", min_count=1, missing_flag="MISS")
 
     def test_length(self):
@@ -217,7 +217,7 @@ class AllMissAggregateTestCase(TestCase):
 
 class SetsMetadataTestCase(TestCase):
     def setUp(self):
-        self.ts = HTimeseries.read(StringIO(tenmin_test_timeseries))
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
         self.ts.title = "hello"
         self.ts.precision = 1
         self.ts.comment = "world"

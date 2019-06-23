@@ -24,7 +24,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["Click>=6.0", "htimeseries"]
+requirements = ["Click>=6.0", "htimeseries>=1.1,<2"]
 
 setup_requirements = ["cython>=0.29,<0.30"]
 

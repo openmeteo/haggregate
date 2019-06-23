@@ -56,7 +56,7 @@ class CliNoTimeSeriesErrorTestCase(TestCase):
 
 
 class CliTestCase(TestCase):
-    @patch("haggregate.cli.HTimeseries", **{"read.return_value": "my timeseries"})
+    @patch("haggregate.cli.HTimeseries", **{"return_value": "my timeseries"})
     @patch("haggregate.cli.regularize", return_value="regularized timeseries")
     @patch("haggregate.cli.aggregate")
     def setUp(self, mock_aggregate, mock_regularize, mock_htimeseries):
@@ -88,7 +88,7 @@ class CliTestCase(TestCase):
         self.assertEqual(self.result.exit_code, 0)
 
     def test_read_source_file(self):
-        self.assertEqual(self.mock_htimeseries.read.call_count, 1)
+        self.assertEqual(self.mock_htimeseries.call_count, 1)
 
     def test_regularize_called_correctly(self):
         self.mock_regularize.assert_called_once_with(

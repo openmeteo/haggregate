@@ -55,7 +55,7 @@ class RegularizeTestCase(TestCase):
             2008-02-07 10:50,11.10,
             """
         )
-        ts = HTimeseries.read(StringIO(input))
+        ts = HTimeseries(StringIO(input))
         ts.time_step = "10,0"
         self.result = regularize(ts)
 
@@ -92,7 +92,7 @@ class RegularizeFirstRecordTestCase(TestCase):
             2008-02-07 10:50,11.10,
             """
         )
-        ts = HTimeseries.read(StringIO(input))
+        ts = HTimeseries(StringIO(input))
         ts.time_step = "10,0"
         self.result = regularize(ts)
 
@@ -118,7 +118,7 @@ class RegularizeLastRecordTestCase(TestCase):
             2008-02-07 10:49,11.10,
             """
         )
-        ts = HTimeseries.read(StringIO(input))
+        ts = HTimeseries(StringIO(input))
         ts.time_step = "10,0"
         self.result = regularize(ts)
 
@@ -144,7 +144,7 @@ class RegularizeNullRecordTestCase(TestCase):
             2008-02-07 11:00,10.93,
             """
         )
-        ts = HTimeseries.read(StringIO(input))
+        ts = HTimeseries(StringIO(input))
         ts.time_step = "10,0"
         self.result = regularize(ts)
 
