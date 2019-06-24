@@ -1,25 +1,9 @@
 #!/usr/bin/env python
-"""
-
-We don't isort this file because Cython has to go after setuptools.
-isort:skip_file
-"""
-
-# Running setup.py requires having installed numpy and Cython. There are some
-# complicated solutions that might make it possible to somehow add them to
-# "setup_requirements" etc., but I decided they aren't worth it. We'd better wait until
-# Python has better packaging tools (this shouldn't need more than 100 more years).
-# More information on the complicated solutions:
-# https://stackoverflow.com/questions/37471313/
-# https://stackoverflow.com/questions/14657375/
-# https://stackoverflow.com/questions/2379898/
 
 import os
 import re
 
-import numpy
-from setuptools import find_packages, setup
-from Cython.Build import cythonize
+from setuptools import Extension, find_packages, setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -34,6 +18,34 @@ setup_requirements = ["cython>=0.29,<0.30"]
 test_requirements = []
 
 
+def use_cython():
+    base_dir = os.path.dirname(os.path.realpath(__file__))
+
+    regularize_pyx = os.path.join(base_dir, "haggregate", "regularize.pyx")
+    regularize_pyx_exists = os.path.exists(regularize_pyx)
+    regularize_c = os.path.join(base_dir, "haggregate", "regularize.c")
+    regularize_c_exists = os.path.exists(regularize_c)
+
+    if (not regularize_pyx_exists) and (not regularize_c_exists):
+        raise Exception("Neither {} nor {} exists".format(regularize_pyx, regularize_c))
+
+    return (not regularize_c_exists) or (
+        regularize_pyx_exists
+        and os.path.getmtime(regularize_pyx) > os.path.getmtime(regularize_c)
+    )
+
+
+if use_cython():
+    import numpy
+    from Cython.Build import cythonize
+
+    ext_modules = cythonize("haggregate/regularize.pyx")
+    include_dirs = [numpy.get_include()]
+else:
+    ext_modules = [Extension("haggregate.regularize", ["haggregate/regularize.c"])]
+    include_dirs = None
+
+
 def get_version():
     scriptdir = os.path.dirname(os.path.abspath(__file__))
     init_py_path = os.path.join(scriptdir, "haggregate", "__init__.py")
@@ -42,8 +54,8 @@ def get_version():
 
 
 setup(
-    ext_modules=cythonize("haggregate/regularize.pyx"),
-    include_dirs=[numpy.get_include()],
+    ext_modules=ext_modules,
+    include_dirs=include_dirs,
     author="Antonis Christofides",
     author_email="antonis@antonischristofides.com",
     classifiers=[

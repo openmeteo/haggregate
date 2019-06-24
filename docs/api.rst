@@ -2,8 +2,6 @@
 API
 ===
 
-``from haggregate import aggregate, regularize``
-
 .. function:: haggregate.regularize.regularize(ts, new_date_flag="DATEINSERT")
 
    Process *ts* (a HTimeseries_ object) and return a new time series
