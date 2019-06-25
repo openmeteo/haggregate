@@ -25,26 +25,16 @@ How to run it
 
 First, you need to create a configuration file with a text editor such
 as ``vim``, ``emacs``, ``notepad``, or whatever. Create such a file
-and name it, for example, :file:`/var/tmp/aggregate.conf`, or, on
-Windows, something like :file:`C:\\Users\\user\\aggregate.conf`, with
+and name it, for example, :file:`/var/tmp/haggregate.conf`, with
 the following contents (the contents don't matter at this stage, just
 copy and paste them from below)::
 
     [General]
     loglevel = INFO
 
-Then, open a command prompt and give it this command:
+Then, open a command prompt and give it this command::
 
-**Unix/Linux**::
-
-    aggregate /var/tmp/aggregate.conf
-
-**Windows**::
-
-    C:\Program Files\Pthelma\aggregate.exe C:\Users\user\aggregate.conf
-
-(the details may differ; for example, in 64-bit Windows, it may be
-:file:`C:\\Program Files (x86)` instead of :file:`C:\\Program Files`.)
+    haggregate /var/tmp/haggregate.conf
 
 If you have done everything correctly, it should output an error message
 complaining that something in its configuration file isn't right.
@@ -59,27 +49,28 @@ explanatory comments that follow it:
 
     [General]
     loglevel = INFO
-    logfile = C:\Somewhere\aggregate.log
-    base_dir = C:\Somewhere
-    target_step = 60,0
+    logfile = /var/log/haggregate/haggregate.log
+    base_dir = /var/cache/timeseries/
+    target_step = 1H
+    min_count = 2
+    missing_flag = DATEINSERT
 
     [temperature]
     source_file = temperature-10min.hts
     target_file = temperature-hourly.hts
-    interval_type = average
+    method = mean
 
     [rainfall]
     source_file = rainfall-10min.hts
     target_file = rainfall-hourly.hts
-    interval_type = sum
+    method = sum
 
-With the above configuration file, ``aggregate`` will log information in
-the file specified by :option:`logfile`. It will aggregate the
-specified time series into hourly (60 minutes, 0 months). The
-filenames specified with :option:`source_file` and
-:option:`target_file` are relative to :option:`base_dir`. For the
-temperature, source records will be averaged, whereas for rainfall
-they will be summed.
+With the above configuration file, ``haggregate`` will log information
+in the file specified by :option:`logfile`. It will aggregate the
+specified time series into hourly (``1H``). The filenames specified with
+:option:`source_file` and :option:`target_file` are relative to
+:option:`base_dir`. For the temperature, source records will be
+averaged, whereas for rainfall they will be summed.
 
 Configuration file reference
 ============================
@@ -104,10 +95,10 @@ General parameters
 
 .. option:: base_dir
 
-   Optional. ``aggregate`` will change directory to this directory, so
+   Optional. ``haggregate`` will change directory to this directory, so
    any relative filenames will be relative to this directory. If
    unspecified, relative filenames will be relative to the directory
-   from which ``aggregate`` was started.
+   from which ``haggregate`` was started.
 
 .. option:: target_step
 

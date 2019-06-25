@@ -102,6 +102,13 @@ class TimestampIrregularityTestCase(TestCase):
             aggregate(ts, "1H", "sum")
 
 
+class WrongTimeStepTestCase(TestCase):
+    def test_raises_exception(self):
+        msg = "The target step can currently only be 1H or 1D"
+        with self.assertRaisesRegex(AggregateError, msg):
+            aggregate(HTimeseries(), "5D", "sum")
+
+
 class HourlySumWithLargerMinCountTestCase(TestCase):
     """Same as HourlySumTestCase but with slightly larger min_count.
     """
@@ -234,3 +241,12 @@ class SetsMetadataTestCase(TestCase):
             self.result.comment,
             "Created by aggregating the time series that had this comment:\n\nworld",
         )
+
+    def test_sets_time_step(self):
+        self.assertEqual(self.result.time_step, "60,0")
+
+    def test_sets_timestamp_rounding(self):
+        self.assertEqual(self.result.timestamp_rounding, "0,0")
+
+    def test_sets_timestamp_offset(self):
+        self.assertEqual(self.result.timestamp_offset, "0,0")
