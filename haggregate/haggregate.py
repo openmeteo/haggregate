@@ -19,19 +19,14 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
 
     # Set metadata of result
     result = HTimeseries()
-    attrs = (
-        "unit",
-        "time_zone",
-        "time_step",
-        "interval_type",
-        "variable",
-        "precision",
-        "location",
-    )
+    attrs = ("unit", "time_zone", "interval_type", "variable", "precision", "location")
     for attr in attrs:
         setattr(result, attr, getattr(hts, attr, None))
-    result.timestamp_rounding = 0
-    result.timestamp_offset = 0
+    result.timestamp_rounding = "0,0"
+    result.timestamp_offset = "0,0"
+    if target_step not in ("1H", "1D"):
+        raise AggregateError("The target step can currently only be 1H or 1D")
+    result.time_step = {"1H": "60,0", "1D": "1440,0"}[target_step]
     if hasattr(hts, "title"):
         result.title = "Aggregated " + hts.title
     if hasattr(hts, "comment"):
