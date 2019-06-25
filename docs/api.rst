@@ -2,7 +2,7 @@
 API
 ===
 
-.. function:: haggregate.regularize.regularize(ts, new_date_flag="DATEINSERT")
+.. function:: haggregate.regularize(ts, new_date_flag="DATEINSERT")
 
    Process *ts* (a HTimeseries_ object) and return a new time series
    (HTimeseries_ object), with a strict time step.
