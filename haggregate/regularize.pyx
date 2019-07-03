@@ -29,7 +29,7 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     result = HTimeseries()
     attrs = (
         "unit",
-        "time_zone",
+        "timezone",
         "time_step",
         "interval_type",
         "variable",
@@ -38,8 +38,8 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     )
     for attr in attrs:
         setattr(result, attr, getattr(ts, attr, None))
-    result.timestamp_rounding = 0
-    result.timestamp_offset = 0
+    result.timestamp_rounding = "0,0"
+    result.timestamp_offset = "0,0"
     if hasattr(ts, "title"):
         result.title = "Regularized " + ts.title
     if hasattr(ts, "comment"):

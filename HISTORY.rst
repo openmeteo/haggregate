@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.3 (2019-07-03)
+==================
+
+- Fixed bug where Timezone wasn't being set in the output file.
+
 0.1.2 (2019-06-25)
 ==================
 

@@ -19,7 +19,7 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
 
     # Set metadata of result
     result = HTimeseries()
-    attrs = ("unit", "time_zone", "interval_type", "variable", "precision", "location")
+    attrs = ("unit", "timezone", "interval_type", "variable", "precision", "location")
     for attr in attrs:
         setattr(result, attr, getattr(hts, attr, None))
     result.timestamp_rounding = "0,0"
