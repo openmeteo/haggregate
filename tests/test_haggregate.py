@@ -228,6 +228,7 @@ class SetsMetadataTestCase(TestCase):
         self.ts.title = "hello"
         self.ts.precision = 1
         self.ts.comment = "world"
+        self.ts.timezone = "EET (+0200)"
         self.result = aggregate(self.ts, "1H", "sum", min_count=3, missing_flag="MISS")
 
     def test_sets_title(self):
@@ -250,3 +251,6 @@ class SetsMetadataTestCase(TestCase):
 
     def test_sets_timestamp_offset(self):
         self.assertEqual(self.result.timestamp_offset, "0,0")
+
+    def test_sets_timezone(self):
+        self.assertEqual(self.result.timezone, "EET (+0200)")

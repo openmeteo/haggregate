@@ -172,3 +172,46 @@ class RegularizeEmptyTestCase(TestCase):
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 0)
+
+
+class SetsMetadataTestCase(TestCase):
+    def setUp(self):
+        input = textwrap.dedent(
+            """\
+            2008-02-07 10:30,10.71,FLAG1
+            2008-02-07 10:41,10.93,FLAG2
+            2008-02-07 10:50,11.10,
+            """
+        )
+        self.ts = HTimeseries(StringIO(input))
+        self.ts.time_step = "10,0"
+        self.ts.title = "hello"
+        self.ts.precision = 1
+        self.ts.comment = "world"
+        self.ts.timezone = "EET (+0200)"
+        self.result = regularize(self.ts)
+
+    def test_sets_title(self):
+        self.assertEqual(self.result.title, "Regularized hello")
+
+    def test_sets_precision(self):
+        self.assertEqual(self.result.precision, 1)
+
+    def test_sets_comment(self):
+        self.assertEqual(
+            self.result.comment,
+            "Created by regularizing step of timeseries "
+            "that had this comment:\n\nworld",
+        )
+
+    def test_sets_time_step(self):
+        self.assertEqual(self.result.time_step, "10,0")
+
+    def test_sets_timestamp_rounding(self):
+        self.assertEqual(self.result.timestamp_rounding, "0,0")
+
+    def test_sets_timestamp_offset(self):
+        self.assertEqual(self.result.timestamp_offset, "0,0")
+
+    def test_sets_timezone(self):
+        self.assertEqual(self.result.timezone, "EET (+0200)")
