@@ -60,15 +60,17 @@ def regularize(ts, new_date_flag="DATEINSERT"):
 
     # Transform all pandas information to plain numpy, which is way faster and is also
     # supported by numba and Cython
+    max_flags_length = max(ts.data["flags"].str.len()) + 1 + len(new_date_flag)
+    flags_dtype = "U" + str(max_flags_length)
     ts_index = ts.data.index.values.astype(long)
     ts_values = ts.data["value"].values
-    ts_flags = ts.data["flags"].values.astype("U250")
+    ts_flags = ts.data["flags"].values.astype(flags_dtype)
     result_step = np.timedelta64(step).astype(int) * 1000
     result_index = pd.date_range(
         first_timestamp_of_result, last_timestamp_of_result, freq=freq
     ).values
     result_values = np.full(len(result_index), np.nan, dtype=object)
-    result_flags = np.full(len(result_index), "", dtype="U250")
+    result_flags = np.full(len(result_index), "", dtype=flags_dtype)
 
     # Do the job
     _perform_regularization(
