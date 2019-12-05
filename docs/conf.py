@@ -55,9 +55,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"haggregate"
-copyright = u"2019, Antonis Christofides"
-author = u"Antonis Christofides"
+project = "haggregate"
+copyright = "2019, Antonis Christofides"
+author = "Antonis Christofides"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -136,8 +136,8 @@ latex_documents = [
     (
         master_doc,
         "haggregate.tex",
-        u"haggregate Documentation",
-        u"Antonis Christofides",
+        "haggregate Documentation",
+        "Antonis Christofides",
         "manual",
     )
 ]
@@ -147,7 +147,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "haggregate", u"haggregate Documentation", [author], 1)]
+man_pages = [(master_doc, "haggregate", "haggregate Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -159,7 +159,7 @@ texinfo_documents = [
     (
         master_doc,
         "haggregate",
-        u"haggregate Documentation",
+        "haggregate Documentation",
         author,
         "haggregate",
         "One line description of project.",
