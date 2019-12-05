@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 from htimeseries import HTimeseries
@@ -14,7 +16,14 @@ class AggregateError(Exception):
     pass
 
 
-def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
+def aggregate(
+    hts,
+    target_step,
+    method,
+    min_count=1,
+    missing_flag="MISS",
+    target_timestamp_offset=None,
+):
     result = HTimeseries()
 
     # Set metadata of result
@@ -27,6 +36,9 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     if target_step not in ("1H", "1D"):
         raise AggregateError("The target step can currently only be 1H or 1D")
     result.time_step = {"1H": "60,0", "1D": "1440,0"}[target_step]
+    if target_timestamp_offset:
+        minutes = _get_offset_in_minutes(target_timestamp_offset)
+        result.timestamp_offset = str(minutes) + ",0"
     if hasattr(hts, "title"):
         result.title = "Aggregated " + hts.title
     if hasattr(hts, "comment"):
@@ -51,7 +63,6 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     end_timestamp = current_range[-1].ceil(target_step)
     new_range = pd.date_range(first_timestamp, end_timestamp, freq=freq)
     source_data = hts.data.reindex(new_range)
-
     # Do the resampling
     resampler = source_data["value"].resample(
         target_step, closed="right", label="right"
@@ -76,4 +87,21 @@ def aggregate(hts, target_step, method, min_count=1, missing_flag="MISS"):
     while pd.isnull(result.data["value"]).iloc[-1]:
         result.data = result.data.drop(result.data.index[-1])
 
+    # Add timestamp_offset
+    if target_timestamp_offset:
+        periods = target_timestamp_offset.startswith("-") and 1 or -1
+        freq = target_timestamp_offset.lstrip("-")
+        result.data = result.data.shift(periods, freq=freq)
+
     return result
+
+
+def _get_offset_in_minutes(timestamp_offset):
+    m = re.match(r"(-?)(\d*)(T|min)$", timestamp_offset)
+    if not m:
+        raise AggregateError(
+            "The target timestamp offset can currently only be a number of minutes "
+            "such as 1min"
+        )
+    sign = m.group(1) == "-" and -1 or 1
+    return sign * int(m.group(2))

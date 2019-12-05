@@ -55,7 +55,7 @@ class CliNoTimeSeriesErrorTestCase(TestCase):
         self.assertIn("No time series have been specified", self.result.output)
 
 
-class CliTestCase(TestCase):
+class CliMixin:
     @patch("haggregate.cli.HTimeseries", **{"return_value": "my timeseries"})
     @patch("haggregate.cli.regularize", return_value="regularized timeseries")
     @patch("haggregate.cli.aggregate")
@@ -66,23 +66,25 @@ class CliTestCase(TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             with open("config.ini", "w") as f:
-                f.write(
-                    textwrap.dedent(
-                        """\
-                        [General]
-                        target_step = D
-                        min_count = 10
-                        missing_flag = MISSING
-
-                        [MyTimeseries]
-                        source_file = mytimeseries.hts
-                        target_file = aggregatedtimeseries.hts
-                        method = sum
-                        """
-                    )
-                )
+                f.write(self.configuration)
             open("mytimeseries.hts", "a").close()
             self.result = runner.invoke(cli.main, ["config.ini"])
+
+
+class CliTestCase(CliMixin, TestCase):
+    configuration = textwrap.dedent(
+        """\
+        [General]
+        target_step = D
+        min_count = 10
+        missing_flag = MISSING
+
+        [MyTimeseries]
+        source_file = mytimeseries.hts
+        target_file = aggregatedtimeseries.hts
+        method = sum
+        """
+    )
 
     def test_exit_code(self):
         self.assertEqual(self.result.exit_code, 0)
@@ -97,7 +99,53 @@ class CliTestCase(TestCase):
 
     def test_aggregate_called_correctly(self):
         self.mock_aggregate.assert_called_once_with(
-            "regularized timeseries", "D", "sum", min_count=10, missing_flag="MISSING"
+            "regularized timeseries",
+            "D",
+            "sum",
+            min_count=10,
+            missing_flag="MISSING",
+            target_timestamp_offset=None,
+        )
+
+    def test_wrote_target_file(self):
+        self.assertEqual(self.mock_aggregate.return_value.write.call_count, 1)
+
+
+class CliWithTargetTimestampOffsetTestCase(CliMixin, TestCase):
+    configuration = textwrap.dedent(
+        """\
+        [General]
+        target_step = D
+        target_timestamp_offset = 1min
+        min_count = 10
+        missing_flag = MISSING
+
+        [MyTimeseries]
+        source_file = mytimeseries.hts
+        target_file = aggregatedtimeseries.hts
+        method = sum
+        """
+    )
+
+    def test_exit_code(self):
+        self.assertEqual(self.result.exit_code, 0)
+
+    def test_read_source_file(self):
+        self.assertEqual(self.mock_htimeseries.call_count, 1)
+
+    def test_regularize_called_correctly(self):
+        self.mock_regularize.assert_called_once_with(
+            "my timeseries", new_date_flag="DATEINSERT"
+        )
+
+    def test_aggregate_called_correctly(self):
+        self.mock_aggregate.assert_called_once_with(
+            "regularized timeseries",
+            "D",
+            "sum",
+            min_count=10,
+            missing_flag="MISSING",
+            target_timestamp_offset="1min",
         )
 
     def test_wrote_target_file(self):

@@ -1,3 +1,5 @@
+.. _usage:
+
 =====
 Usage
 =====
@@ -106,6 +108,17 @@ General parameters
    Examples of steps are "1D" for day, "1H" for hour, "1T" or "1min" for
    minute. You can also use larger multipliers, like "30T" for 30 minutes.
    The program hasn't been tested for monthly or larger time steps.
+
+.. option:: target_step_offset
+
+   Optional. A string specifying the resulting timestamp offset, as a
+   pandas "frequency". For example, for ``target_step=1D``, if we set
+   ``target_step_offset=1M``, the resulting time stamps will be ending
+   in 23:59. This does not modify the calculations; it only offsets the
+   timestamp. For example, if without ``target_step_offset`` one of the
+   resulting timeseries records is ``2019-12-05 00:00, 3.14``, then with
+   ``target_step_offset=-10`` the same processing will result in
+   ``2019-12-05 00:10, 3.14``.
 
 .. option:: min_count
             missing_flag

@@ -159,6 +159,78 @@ class HourlyMeanTestCase(TestCase):
         )
 
 
+class HourlyMeanWithOffsetTestCase(TestCase):
+    def setUp(self):
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
+        self.result = aggregate(
+            self.ts,
+            "1H",
+            "mean",
+            min_count=3,
+            missing_flag="MISS",
+            target_timestamp_offset="1min",
+        )
+
+    def test_length(self):
+        self.assertEqual(len(self.result.data), 4)
+
+    def test_value_1(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 09:59"].value, 10.4166667
+        )
+
+    def test_value_2(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:59"].value, 10.9116667
+        )
+
+    def test_value_3(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 11:59"].value, 11.5483333
+        )
+
+    def test_value_4(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 12:59"].value, 12.1283333
+        )
+
+
+class HourlyMeanWithNegativeOffsetTestCase(TestCase):
+    def setUp(self):
+        self.ts = HTimeseries(StringIO(tenmin_test_timeseries))
+        self.result = aggregate(
+            self.ts,
+            "1H",
+            "mean",
+            min_count=3,
+            missing_flag="MISS",
+            target_timestamp_offset="-1min",
+        )
+
+    def test_length(self):
+        self.assertEqual(len(self.result.data), 4)
+
+    def test_value_1(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:01"].value, 10.4166667
+        )
+
+    def test_value_2(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 11:01"].value, 10.9116667
+        )
+
+    def test_value_3(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 12:01"].value, 11.5483333
+        )
+
+    def test_value_4(self):
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 13:01"].value, 12.1283333
+        )
+
+
 class HourlyMaxTestCase(TestCase):
     def setUp(self):
         self.ts = HTimeseries(StringIO(tenmin_test_timeseries))

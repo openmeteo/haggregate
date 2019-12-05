@@ -65,13 +65,14 @@ API
    it with a more clever one that does interpolation, first check commit
    67bceaa, which had one (or the difference with the next commit).
 
-.. function:: haggregate.aggregate(ts, target_step, method[, min_count=None][, missing_flag])
+.. function:: haggregate.aggregate(ts, target_step, method[, min_count=None][, missing_flag][, target_step_offset])
 
    Process *ts* (a HTimeseries_ object) and return a new time series
-   (HTimeseries_ object), with the aggregated series.  "target_step" is
-   a pandas "frequency" string.  *method* is "sum", "mean", "max" or
-   "min". *ts* must have a strictly regular step. If in doubt, call
-   :func:`regularize` before calling :func:`aggregate`.
+   (HTimeseries_ object), with the aggregated series.  "target_step" and
+   "target_step_offset" are pandas "frequency" strings (see :ref:`usage`
+   for more).  *method* is "sum", "mean", "max" or "min". *ts* must have
+   a strictly regular step. If in doubt, call :func:`regularize` before
+   calling :func:`aggregate`.
 
    If some of the source records corresponding to a destination record
    are missing, *min_count* specifies what will be done. If there fewer

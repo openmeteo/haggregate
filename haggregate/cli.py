@@ -34,6 +34,9 @@ def main(configfile):
         target_step = config.get("General", "target_step")
         min_count = config.getint("General", "min_count")
         missing_flag = config.get("General", "missing_flag")
+        target_timestamp_offset = config.get(
+            "General", "target_timestamp_offset", fallback=None
+        )
 
         # Remove [General] and make sure there are more sections
         config.pop("General")
@@ -64,6 +67,7 @@ def main(configfile):
                 method,
                 min_count=min_count,
                 missing_flag=missing_flag,
+                target_timestamp_offset=target_timestamp_offset,
             )
             with open(target_filename, "w") as f:
                 aggts.write(f, format=HTimeseries.FILE)
