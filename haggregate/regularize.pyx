@@ -5,6 +5,7 @@ cimport numpy as np
 import numpy as np
 import pandas as pd
 from htimeseries import HTimeseries
+from pandas.tseries.frequencies import to_offset
 
 
 class RegularizeError(Exception):
@@ -16,13 +17,11 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     if not hasattr(ts, "time_step"):
         raise RegularizeError("The source time series does not specify a time step")
     try:
-        minutes, months = [int(x.strip()) for x in ts.time_step.split(",")]
-        if months or (minutes <= 0):
-            raise ValueError()
+        pd.to_timedelta(to_offset(ts.time_step))
     except ValueError:
         raise RegularizeError(
             "The time step is malformed or is specified in months. Only time steps "
-            "specified in minutes are supported."
+            "specified in minutes, hours or days are supported."
         )
 
     # Set metadata of result
@@ -38,8 +37,6 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     )
     for attr in attrs:
         setattr(result, attr, getattr(ts, attr, None))
-    result.timestamp_rounding = "0,0"
-    result.timestamp_offset = "0,0"
     if hasattr(ts, "title"):
         result.title = "Regularized " + ts.title
     if hasattr(ts, "comment"):
@@ -53,8 +50,7 @@ def regularize(ts, new_date_flag="DATEINSERT"):
         return result
 
     # Determine first and last timestamps
-    freq = ts.time_step.split(",")[0].strip() + "min"
-    step = pd.Timedelta(freq)
+    step = pd.Timedelta(ts.time_step)
     first_timestamp_of_result = ts.data.index[0].round(step)
     last_timestamp_of_result = ts.data.index[-1].round(step)
 
@@ -67,7 +63,7 @@ def regularize(ts, new_date_flag="DATEINSERT"):
     ts_flags = ts.data["flags"].values.astype(flags_dtype)
     result_step = np.timedelta64(step).astype(int) * 1000
     result_index = pd.date_range(
-        first_timestamp_of_result, last_timestamp_of_result, freq=freq
+        first_timestamp_of_result, last_timestamp_of_result, freq=ts.time_step
     ).values
     result_values = np.full(len(result_index), np.nan, dtype=object)
     result_flags = np.full(len(result_index), "", dtype=flags_dtype)

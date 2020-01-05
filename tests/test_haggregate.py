@@ -316,13 +316,7 @@ class SetsMetadataTestCase(TestCase):
         )
 
     def test_sets_time_step(self):
-        self.assertEqual(self.result.time_step, "60,0")
-
-    def test_sets_timestamp_rounding(self):
-        self.assertEqual(self.result.timestamp_rounding, "0,0")
-
-    def test_sets_timestamp_offset(self):
-        self.assertEqual(self.result.timestamp_offset, "0,0")
+        self.assertEqual(self.result.time_step, "1H")
 
     def test_sets_timezone(self):
         self.assertEqual(self.result.timezone, "EET (+0200)")

@@ -113,11 +113,11 @@ General parameters
 
    Optional. A string specifying the resulting timestamp offset, as a
    pandas "frequency". For example, for ``target_step=1D``, if we set
-   ``target_step_offset=1M``, the resulting time stamps will be ending
+   ``target_step_offset=1min``, the resulting time stamps will be ending
    in 23:59. This does not modify the calculations; it only offsets the
    timestamp. For example, if without ``target_step_offset`` one of the
    resulting timeseries records is ``2019-12-05 00:00, 3.14``, then with
-   ``target_step_offset=-10`` the same processing will result in
+   ``target_step_offset=-10min`` the same processing will result in
    ``2019-12-05 00:10, 3.14``.
 
 .. option:: min_count

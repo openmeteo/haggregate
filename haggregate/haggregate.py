@@ -31,14 +31,9 @@ def aggregate(
     attrs = ("unit", "timezone", "interval_type", "variable", "precision", "location")
     for attr in attrs:
         setattr(result, attr, getattr(hts, attr, None))
-    result.timestamp_rounding = "0,0"
-    result.timestamp_offset = "0,0"
     if target_step not in ("1H", "1D"):
         raise AggregateError("The target step can currently only be 1H or 1D")
-    result.time_step = {"1H": "60,0", "1D": "1440,0"}[target_step]
-    if target_timestamp_offset:
-        minutes = _get_offset_in_minutes(target_timestamp_offset)
-        result.timestamp_offset = str(minutes) + ",0"
+    result.time_step = target_step
     if hasattr(hts, "title"):
         result.title = "Aggregated " + hts.title
     if hasattr(hts, "comment"):

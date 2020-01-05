@@ -20,27 +20,17 @@ class BadTimeStepTestCase(TestCase):
         ts.time_step = "hello"
         msg = (
             "The time step is malformed or is specified in months. Only time steps "
-            "specified in minutes are supported."
+            "specified in minutes, hours or days are supported."
         )
         with self.assertRaisesRegex(RegularizeError, msg):
             regularize(ts)
 
     def test_malformed_time_step2(self):
         ts = HTimeseries()
-        ts.time_step = "hello,world"
+        ts.time_step = "5M"
         msg = (
             "The time step is malformed or is specified in months. Only time steps "
-            "specified in minutes are supported."
-        )
-        with self.assertRaisesRegex(RegularizeError, msg):
-            regularize(ts)
-
-    def test_unsupported_time_step(self):
-        ts = HTimeseries()
-        ts.time_step = "0,1"
-        msg = (
-            "The time step is malformed or is specified in months. Only time steps "
-            "specified in minutes are supported."
+            "specified in minutes, hours or days are supported."
         )
         with self.assertRaisesRegex(RegularizeError, msg):
             regularize(ts)
@@ -56,7 +46,7 @@ class RegularizeTestCase(TestCase):
             """
         )
         ts = HTimeseries(StringIO(input))
-        ts.time_step = "10,0"
+        ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
@@ -93,7 +83,7 @@ class RegularizeFirstRecordTestCase(TestCase):
             """
         )
         ts = HTimeseries(StringIO(input))
-        ts.time_step = "10,0"
+        ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
@@ -119,7 +109,7 @@ class RegularizeLastRecordTestCase(TestCase):
             """
         )
         ts = HTimeseries(StringIO(input))
-        ts.time_step = "10,0"
+        ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
@@ -145,7 +135,7 @@ class RegularizeNullRecordTestCase(TestCase):
             """
         )
         ts = HTimeseries(StringIO(input))
-        ts.time_step = "10,0"
+        ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
@@ -167,7 +157,7 @@ class RegularizeNullRecordTestCase(TestCase):
 class RegularizeEmptyTestCase(TestCase):
     def setUp(self):
         ts = HTimeseries()
-        ts.time_step = "10,0"
+        ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
@@ -184,7 +174,7 @@ class SetsMetadataTestCase(TestCase):
             """
         )
         self.ts = HTimeseries(StringIO(input))
-        self.ts.time_step = "10,0"
+        self.ts.time_step = "10min"
         self.ts.title = "hello"
         self.ts.precision = 1
         self.ts.comment = "world"
@@ -205,13 +195,7 @@ class SetsMetadataTestCase(TestCase):
         )
 
     def test_sets_time_step(self):
-        self.assertEqual(self.result.time_step, "10,0")
-
-    def test_sets_timestamp_rounding(self):
-        self.assertEqual(self.result.timestamp_rounding, "0,0")
-
-    def test_sets_timestamp_offset(self):
-        self.assertEqual(self.result.timestamp_offset, "0,0")
+        self.assertEqual(self.result.time_step, "10min")
 
     def test_sets_timezone(self):
         self.assertEqual(self.result.timezone, "EET (+0200)")
