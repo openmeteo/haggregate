@@ -39,11 +39,19 @@ if use_cython():
     import numpy
     from Cython.Build import cythonize
 
-    ext_modules = cythonize("haggregate/regularize.pyx")
-    include_dirs = [numpy.get_include()]
+    ext_modules = cythonize(
+        "haggregate/regularize.pyx", include_path=[numpy.get_include()]
+    )
 else:
-    ext_modules = [Extension("haggregate.regularize", ["haggregate/regularize.c"])]
-    include_dirs = None
+    import numpy
+
+    ext_modules = [
+        Extension(
+            "haggregate.regularize",
+            ["haggregate/regularize.c"],
+            include_dirs=[numpy.get_include()],
+        )
+    ]
 
 
 def get_version():
@@ -55,7 +63,6 @@ def get_version():
 
 setup(
     ext_modules=ext_modules,
-    include_dirs=include_dirs,
     author="Antonis Christofides",
     author_email="antonis@antonischristofides.com",
     classifiers=[
