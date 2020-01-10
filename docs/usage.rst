@@ -109,15 +109,16 @@ General parameters
    minute. You can also use larger multipliers, like "30T" for 30 minutes.
    The program hasn't been tested for monthly or larger time steps.
 
-.. option:: target_step_offset
+.. option:: target_timestamp_offset
 
    Optional. A string specifying the resulting timestamp offset, as a
-   pandas "frequency". For example, for ``target_step=1D``, if we set
-   ``target_step_offset=1min``, the resulting time stamps will be ending
-   in 23:59. This does not modify the calculations; it only offsets the
-   timestamp. For example, if without ``target_step_offset`` one of the
-   resulting timeseries records is ``2019-12-05 00:00, 3.14``, then with
-   ``target_step_offset=-10min`` the same processing will result in
+   pandas "frequency". For example, for ``target_timestamp_offset=1D``,
+   if we set ``target_timestamp_offset=1min``, the resulting time stamps
+   will be ending in 23:59. This does not modify the calculations; it
+   only offsets the timestamp. For example, if without
+   ``target_timestamp_offset`` one of the resulting timeseries records
+   is ``2019-12-05 00:00, 3.14``, then with
+   ``target_timestamp_offset=-10min`` the same processing will result in
    ``2019-12-05 00:10, 3.14``.
 
 .. option:: min_count
