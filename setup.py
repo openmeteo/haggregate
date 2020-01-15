@@ -39,8 +39,14 @@ if use_cython():
     import numpy
     from Cython.Build import cythonize
 
+    # The way we do the below is because of a Cython bug or maybe documentation error.
+    # See https://github.com/cython/cython/issues/1480#issuecomment-401875701
     ext_modules = cythonize(
-        "haggregate/regularize.pyx", include_path=[numpy.get_include()]
+        Extension(
+            "haggregate.regularize",
+            sources=["haggregate/regularize.pyx"],
+            include_dirs=[numpy.get_include()],
+        )
     )
 else:
     import numpy
