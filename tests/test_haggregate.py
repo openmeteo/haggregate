@@ -274,12 +274,25 @@ class HourlyMinTestCase(TestCase):
 
 
 class AggregateEmptyTestCase(TestCase):
-    def setUp(self):
-        self.ts = HTimeseries()
-        self.result = aggregate(self.ts, "1H", "sum", min_count=3, missing_flag="MISS")
+    def test_completely_empty(self):
+        ts = HTimeseries()
+        result = aggregate(ts, "1H", "sum", min_count=3, missing_flag="MISS")
+        self.assertEqual(len(result.data), 0)
 
-    def test_length(self):
-        self.assertEqual(len(self.result.data), 0)
+    def test_empty_result_from_nonempty_source(self):
+        ts = HTimeseries(
+            StringIO(
+                textwrap.dedent(
+                    """
+                    2020-01-22 19:10,27,
+                    2020-01-22 19:20,28,
+                    2020-01-22 19:30,29,
+                    """
+                )
+            )
+        )
+        result = aggregate(ts, "1H", "sum", min_count=4, missing_flag="MISS")
+        self.assertEqual(len(result.data), 0)
 
 
 class AllMissAggregateTestCase(TestCase):
