@@ -77,9 +77,9 @@ def aggregate(
     )
 
     # Remove leading and trailing NaN values from the result
-    while pd.isnull(result.data["value"]).iloc[0]:
+    while len(result.data.index) > 0 and pd.isnull(result.data["value"]).iloc[0]:
         result.data = result.data.drop(result.data.index[0])
-    while pd.isnull(result.data["value"]).iloc[-1]:
+    while len(result.data.index) > 0 and pd.isnull(result.data["value"]).iloc[-1]:
         result.data = result.data.drop(result.data.index[-1])
 
     # Add timestamp_offset

@@ -2,6 +2,17 @@
 History
 =======
 
+1.0.2 (2020-01-22)
+==================
+
+- Fixed crash if result had only NaN values.
+
+1.0.1 (2020-01-10)
+==================
+
+- Made installation process more robust. Sometimes it could fail,
+  depending on the environment.
+
 1.0.0 (2020-01-05)
 ==================
 
