@@ -8,3 +8,4 @@ haggregate - aggregation of time series
    usage
    api
    history
+   copyright
