@@ -2,6 +2,12 @@
 History
 =======
 
+2.0.1 (2022-11-13)
+==================
+
+- Fixed inability to install with pip on Python 3.10 (no difference in
+  code, it was only rebuilt in Python 3.10).
+
 2.0.0 (2020-02-23)
 ==================
 
