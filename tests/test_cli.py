@@ -1,3 +1,4 @@
+import datetime as dt
 import textwrap
 from unittest import TestCase
 from unittest.mock import patch
@@ -91,6 +92,13 @@ class CliTestCase(CliMixin, TestCase):
 
     def test_read_source_file(self):
         self.assertEqual(self.mock_htimeseries.call_count, 1)
+
+    def test_htimeseries_called_correctly(self):
+        self.mock_htimeseries.assert_called_once()
+        self.assertEqual(
+            self.mock_htimeseries.call_args[1],
+            {"format": self.mock_htimeseries.FILE, "default_tzinfo": dt.timezone.utc},
+        )
 
     def test_regularize_called_correctly(self):
         self.mock_regularize.assert_called_once_with(

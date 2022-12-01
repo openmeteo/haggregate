@@ -1,6 +1,7 @@
 # cython: language_level=3, linetrace=True
 # distutils: define_macros=CYTHON_TRACE=1
 
+import datetime as dt
 cimport numpy as np
 import numpy as np
 import pandas as pd
@@ -84,7 +85,7 @@ def regularize(ts, new_date_flag="DATEINSERT"):
         index=result_index,
         columns=["value", "flags"],
         data=np.vstack((result_values, result_flags)).transpose(),
-    )
+    ).tz_localize(dt.timezone.utc).tz_convert(first_timestamp_of_result.tz)
     return result
 
 

@@ -8,6 +8,7 @@ Haggregate is
 | Copyright (C) 2013-2018 TEI of Epirus
 | Copyright (C) 2018-2021 National Technical University of Athens
 | Copyright (C) 2018-2021 Institute of Communication and Computer Systems
+| Copyright (C) 2022 IRMASYS P.C.
 
 Haggregate is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License, as published by the

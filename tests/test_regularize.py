@@ -1,6 +1,12 @@
+import datetime as dt
 import textwrap
 from io import StringIO
 from unittest import TestCase
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 import numpy as np
 from htimeseries import HTimeseries
@@ -45,32 +51,44 @@ class RegularizeTestCase(TestCase):
             2008-02-07 10:50,11.10,
             """
         )
-        ts = HTimeseries(StringIO(input))
+        ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
         self.result = regularize(ts)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 3)
 
+    def test_timestamps_are_aware(self):
+        self.assertEqual(self.result.data.index[0].utcoffset(), dt.timedelta(hours=2))
+
     def test_value_1(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:30"].value, 10.71)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:30:00+0200"].value, 10.71
+        )
 
     def test_value_2(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:40"].value, 10.93)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:40:00+0200"].value, 10.93
+        )
 
     def test_value_3(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:50"].value, 11.10)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:50:00+0200"].value, 11.10
+        )
 
     def test_flags_1(self):
-        self.assertEqual(self.result.data.loc["2008-02-07 10:30"]["flags"], "FLAG1")
+        self.assertEqual(
+            self.result.data.loc["2008-02-07 10:30:00+0200"]["flags"], "FLAG1"
+        )
 
     def test_flags_2(self):
         self.assertEqual(
-            self.result.data.loc["2008-02-07 10:40"]["flags"], "FLAG2 DATEINSERT"
+            self.result.data.loc["2008-02-07 10:40:00+0200"]["flags"],
+            "FLAG2 DATEINSERT",
         )
 
     def test_flags_3(self):
-        self.assertEqual(self.result.data.loc["2008-02-07 10:50"]["flags"], "")
+        self.assertEqual(self.result.data.loc["2008-02-07 10:50:00+0200"]["flags"], "")
 
 
 class RegularizeFirstRecordTestCase(TestCase):
@@ -82,7 +100,7 @@ class RegularizeFirstRecordTestCase(TestCase):
             2008-02-07 10:50,11.10,
             """
         )
-        ts = HTimeseries(StringIO(input))
+        ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
         self.result = regularize(ts)
 
@@ -90,13 +108,19 @@ class RegularizeFirstRecordTestCase(TestCase):
         self.assertEqual(len(self.result.data), 3)
 
     def test_value_1(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:30"].value, 10.71)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:30:00+0200"].value, 10.71
+        )
 
     def test_value_2(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:40"].value, 10.93)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:40:00+0200"].value, 10.93
+        )
 
     def test_value_3(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:50"].value, 11.10)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:50:00+0200"].value, 11.10
+        )
 
 
 class RegularizeLastRecordTestCase(TestCase):
@@ -108,7 +132,7 @@ class RegularizeLastRecordTestCase(TestCase):
             2008-02-07 10:49,11.10,
             """
         )
-        ts = HTimeseries(StringIO(input))
+        ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
         self.result = regularize(ts)
 
@@ -116,13 +140,19 @@ class RegularizeLastRecordTestCase(TestCase):
         self.assertEqual(len(self.result.data), 3)
 
     def test_value_1(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:30"].value, 10.71)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:30:00+0200"].value, 10.71
+        )
 
     def test_value_2(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:40"].value, 10.93)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:40:00+0200"].value, 10.93
+        )
 
     def test_value_3(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:50"].value, 11.10)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:50:00+0200"].value, 11.10
+        )
 
 
 class RegularizeNullRecordTestCase(TestCase):
@@ -134,7 +164,7 @@ class RegularizeNullRecordTestCase(TestCase):
             2008-02-07 11:00,10.93,
             """
         )
-        ts = HTimeseries(StringIO(input))
+        ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
         self.result = regularize(ts)
 
@@ -142,16 +172,24 @@ class RegularizeNullRecordTestCase(TestCase):
         self.assertEqual(len(self.result.data), 4)
 
     def test_value_1(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:30"].value, 10.71)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:30:00+0200"].value, 10.71
+        )
 
     def test_value_2(self):
-        self.assertTrue(np.isnan(self.result.data.loc["2008-02-07 10:40"].value))
+        self.assertTrue(
+            np.isnan(self.result.data.loc["2008-02-07 10:40:00+0200"].value)
+        )
 
     def test_value_3(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 10:50"].value, 11.10)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 10:50:00+0200"].value, 11.10
+        )
 
     def test_value_4(self):
-        self.assertAlmostEqual(self.result.data.loc["2008-02-07 11:00"].value, 10.93)
+        self.assertAlmostEqual(
+            self.result.data.loc["2008-02-07 11:00:00+0200"].value, 10.93
+        )
 
 
 class RegularizeEmptyTestCase(TestCase):
@@ -173,7 +211,7 @@ class SetsMetadataTestCase(TestCase):
             2008-02-07 10:50,11.10,
             """
         )
-        self.ts = HTimeseries(StringIO(input))
+        self.ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         self.ts.time_step = "10min"
         self.ts.title = "hello"
         self.ts.precision = 1

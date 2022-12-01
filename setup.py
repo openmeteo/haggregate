@@ -11,7 +11,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["Click>=7.0,<8", "htimeseries>=3,<4"]
+requirements = ["Click>=7.0,<8", "htimeseries>=4,<5"]
 
 setup_requirements = ["cython>=0.29,<0.30"]
 
@@ -77,6 +77,10 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     description="Aggregates htimeseries to larger steps",
     entry_points={"console_scripts": ["haggregate=haggregate.cli:main"]},
