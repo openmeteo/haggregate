@@ -3,4 +3,4 @@ from .regularize import *  # NOQA
 
 __author__ = """Antonis Christofides"""
 __email__ = "antonis@antonischristofides.com"
-__version__ = "3.0.0"
+__version__ = "3.0.1"
