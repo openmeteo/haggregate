@@ -1,4 +1,5 @@
 import datetime as dt
+import math
 import textwrap
 from io import StringIO
 from unittest import TestCase
@@ -11,7 +12,7 @@ except ImportError:
 import numpy as np
 from htimeseries import HTimeseries
 
-from haggregate import RegularizeError, regularize
+from haggregate import RegularizationMode, RegularizeError, regularize
 
 
 class BadTimeStepTestCase(TestCase):
@@ -19,7 +20,7 @@ class BadTimeStepTestCase(TestCase):
         ts = HTimeseries()
         msg = "The source time series does not specify a time step"
         with self.assertRaisesRegex(RegularizeError, msg):
-            regularize(ts)
+            regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_malformed_time_step(self):
         ts = HTimeseries()
@@ -29,7 +30,7 @@ class BadTimeStepTestCase(TestCase):
             "specified in minutes, hours or days are supported."
         )
         with self.assertRaisesRegex(RegularizeError, msg):
-            regularize(ts)
+            regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_malformed_time_step2(self):
         ts = HTimeseries()
@@ -39,7 +40,7 @@ class BadTimeStepTestCase(TestCase):
             "specified in minutes, hours or days are supported."
         )
         with self.assertRaisesRegex(RegularizeError, msg):
-            regularize(ts)
+            regularize(ts, mode=RegularizationMode.INTERVAL)
 
 
 class RegularizeTestCase(TestCase):
@@ -53,7 +54,7 @@ class RegularizeTestCase(TestCase):
         )
         ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
-        self.result = regularize(ts)
+        self.result = regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 3)
@@ -102,7 +103,7 @@ class RegularizeFirstRecordTestCase(TestCase):
         )
         ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
-        self.result = regularize(ts)
+        self.result = regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 3)
@@ -134,7 +135,7 @@ class RegularizeLastRecordTestCase(TestCase):
         )
         ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
-        self.result = regularize(ts)
+        self.result = regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 3)
@@ -166,7 +167,7 @@ class RegularizeNullRecordTestCase(TestCase):
         )
         ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
         ts.time_step = "10min"
-        self.result = regularize(ts)
+        self.result = regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 4)
@@ -196,10 +197,54 @@ class RegularizeEmptyTestCase(TestCase):
     def setUp(self):
         ts = HTimeseries()
         ts.time_step = "10min"
-        self.result = regularize(ts)
+        self.result = regularize(ts, mode=RegularizationMode.INTERVAL)
 
     def test_length(self):
         self.assertEqual(len(self.result.data), 0)
+
+
+class RegularizeWithNullRecordTestCase(TestCase):
+    def setUp(self):
+        input = textwrap.dedent(
+            """\
+            2008-02-07 10:30,10.71,FLAG1
+            2008-02-07 10:40,,
+            2008-02-07 10:41,10.93,FLAG2
+            2008-02-07 10:50,11.10,
+            """
+        )
+        self.ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
+        self.ts.time_step = "10min"
+
+    def test_interval(self):
+        result = regularize(self.ts, mode=RegularizationMode.INTERVAL)
+        self.assertTrue(math.isnan(result.data.loc["2008-02-07 10:40"].value))
+
+    def test_instantaneous(self):
+        result = regularize(self.ts, mode=RegularizationMode.INSTANTANEOUS)
+        self.assertAlmostEqual(result.data.loc["2008-02-07 10:40"].value, 10.93)
+
+
+class NearestTestCase(TestCase):
+    def setUp(self):
+        input = textwrap.dedent(
+            """\
+            2008-02-07 10:30,10.71,FLAG1
+            2008-02-07 10:38,11.93,FLAG2
+            2008-02-07 10:41,10.93,FLAG2
+            2008-02-07 10:50,11.10,
+            """
+        )
+        self.ts = HTimeseries(StringIO(input), default_tzinfo=ZoneInfo("Etc/GMT-2"))
+        self.ts.time_step = "10min"
+
+    def test_interval(self):
+        result = regularize(self.ts, mode=RegularizationMode.INTERVAL)
+        self.assertTrue(math.isnan(result.data.loc["2008-02-07 10:40"].value))
+
+    def test_instantaneous(self):
+        result = regularize(self.ts, mode=RegularizationMode.INSTANTANEOUS)
+        self.assertAlmostEqual(result.data.loc["2008-02-07 10:40"].value, 10.93)
 
 
 class SetsMetadataTestCase(TestCase):
@@ -217,7 +262,7 @@ class SetsMetadataTestCase(TestCase):
         self.ts.precision = 1
         self.ts.comment = "world"
         self.ts.timezone = "EET (+0200)"
-        self.result = regularize(self.ts)
+        self.result = regularize(self.ts, mode=RegularizationMode.INTERVAL)
 
     def test_sets_title(self):
         self.assertEqual(self.result.title, "Regularized hello")

@@ -2,6 +2,12 @@
 History
 =======
 
+3.1.0 (2024-04-18)
+==================
+
+- Use different regularization modes for interval and instantaneous
+  variables.
+
 3.0.3 (2024-04-16)
 ==================
 

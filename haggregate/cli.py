@@ -8,7 +8,7 @@ import traceback
 import click
 from htimeseries import HTimeseries
 
-from haggregate import aggregate
+from haggregate import RegularizationMode, aggregate
 from haggregate.regularize import regularize
 
 
@@ -62,7 +62,11 @@ def main(configfile):
                 ts = HTimeseries(
                     f, format=HTimeseries.FILE, default_tzinfo=dt.timezone.utc
                 )
-            regts = regularize(ts, new_date_flag="DATEINSERT")
+            if method == "mean":
+                regularization_mode = RegularizationMode.INSTANTANEOUS
+            else:
+                regularization_mode = RegularizationMode.INTERVAL
+            regts = regularize(ts, new_date_flag="DATEINSERT", mode=regularization_mode)
             aggts = aggregate(
                 regts,
                 target_step,

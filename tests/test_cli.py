@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 
-from haggregate import cli
+from haggregate import RegularizationMode, cli
 
 
 class CliUsageErrorTestCase(TestCase):
@@ -60,7 +60,7 @@ class CliMixin:
     @patch("haggregate.cli.HTimeseries", **{"return_value": "my timeseries"})
     @patch("haggregate.cli.regularize", return_value="regularized timeseries")
     @patch("haggregate.cli.aggregate")
-    def setUp(self, mock_aggregate, mock_regularize, mock_htimeseries):
+    def _execute(self, mock_aggregate, mock_regularize, mock_htimeseries):
         self.mock_aggregate = mock_aggregate
         self.mock_regularize = mock_regularize
         self.mock_htimeseries = mock_htimeseries
@@ -87,6 +87,9 @@ class CliTestCase(CliMixin, TestCase):
         """
     )
 
+    def setUp(self):
+        self._execute()
+
     def test_exit_code(self):
         self.assertEqual(self.result.exit_code, 0)
 
@@ -102,7 +105,9 @@ class CliTestCase(CliMixin, TestCase):
 
     def test_regularize_called_correctly(self):
         self.mock_regularize.assert_called_once_with(
-            "my timeseries", new_date_flag="DATEINSERT"
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INTERVAL,
         )
 
     def test_aggregate_called_correctly(self):
@@ -117,6 +122,56 @@ class CliTestCase(CliMixin, TestCase):
 
     def test_wrote_target_file(self):
         self.assertEqual(self.mock_aggregate.return_value.write.call_count, 1)
+
+
+class RegularizationModeTestCase(CliMixin, TestCase):
+    def _run(self, method):
+        self.configuration = textwrap.dedent(
+            f"""\
+            [General]
+            target_step = D
+            min_count = 10
+            missing_flag = MISSING
+
+            [MyTimeseries]
+            source_file = mytimeseries.hts
+            target_file = aggregatedtimeseries.hts
+            method = {method}
+            """
+        )
+        self._execute()
+
+    def test_regularize_called_correctly_when_sum(self):
+        self._run("sum")
+        self.mock_regularize.assert_called_once_with(
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INTERVAL,
+        )
+
+    def test_regularize_called_correctly_when_mean(self):
+        self._run("mean")
+        self.mock_regularize.assert_called_once_with(
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INSTANTANEOUS,
+        )
+
+    def test_regularize_called_correctly_when_max(self):
+        self._run("max")
+        self.mock_regularize.assert_called_once_with(
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INTERVAL,
+        )
+
+    def test_regularize_called_correctly_when_min(self):
+        self._run("min")
+        self.mock_regularize.assert_called_once_with(
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INTERVAL,
+        )
 
 
 class CliWithTargetTimestampOffsetTestCase(CliMixin, TestCase):
@@ -135,6 +190,9 @@ class CliWithTargetTimestampOffsetTestCase(CliMixin, TestCase):
         """
     )
 
+    def setUp(self):
+        self._execute()
+
     def test_exit_code(self):
         self.assertEqual(self.result.exit_code, 0)
 
@@ -143,7 +201,9 @@ class CliWithTargetTimestampOffsetTestCase(CliMixin, TestCase):
 
     def test_regularize_called_correctly(self):
         self.mock_regularize.assert_called_once_with(
-            "my timeseries", new_date_flag="DATEINSERT"
+            "my timeseries",
+            new_date_flag="DATEINSERT",
+            mode=RegularizationMode.INTERVAL,
         )
 
     def test_aggregate_called_correctly(self):

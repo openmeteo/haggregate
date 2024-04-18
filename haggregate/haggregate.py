@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 
 import numpy as np
 import pandas as pd
@@ -146,3 +147,8 @@ def _get_offset_in_minutes(timestamp_offset):
         )
     sign = m.group(1) == "-" and -1 or 1
     return sign * int(m.group(2))
+
+
+class RegularizationMode(Enum):
+    INSTANTANEOUS = 1
+    INTERVAL = 2
